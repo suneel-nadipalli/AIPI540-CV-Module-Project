@@ -22,7 +22,6 @@ Folders
 
         > Bird - raw bird images used for model training/testing
         > Squirrel - raw squirrel images used for model training/testing
-
   > models 
 
     > resnet18_custom_model.pth - original transfer learning approach with ResNet (NOT FINAL MODEL) 
