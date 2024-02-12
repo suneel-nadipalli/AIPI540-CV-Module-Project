@@ -11,7 +11,7 @@ Our Repository is Structured as Follows:
 
 Folders 
 
-  data 
+  > data 
 
     > processed 
 
@@ -22,14 +22,56 @@ Folders
 
         > Bird - raw bird images used for model training/testing
         > Squirrel - raw squirrel images used for model training/testing
+  > models 
 
-  models 
+    > resnet18_custom_model.pth - original transfer learning approach with ResNet (NOT FINAL MODEL) 
+    > svm_model.pkl - non-neural network approach SVM model 
 
-    > resnet18_custom_model.pth
-    > svm_model.pkl
+  > notebooks
 
-  
-        
-      
+    > Data_Preparation.ipynb - notebook delineating steps to prepare data including resizing with skimage (224,224), converting images to 
+    greyscale to work with nightvision/IR images, flattening images, and storing images and labels as numpy arrays data_array.npy and 
+    labels_array.npy 
 
-    
+    > Data_Splitting_&_SVM.ipynb - notebook describing steps to split the data (80% training, 20% testing using sklearn train_test_split),       run data through non-neural network model (SVM), and output predictions/accuracy metrics for test set analysis
+
+    > DL_FineTuning_Model.ipynb - notebook containing code for downloading pre-trained ResNet model, augmenting training with our own bird
+    and squirrel training images, and testing accuracy of transfer learning approach on test set. 
+
+    > Mean_Model.ipynb - notebook showing the steps involved in downloading the mean model comparitor (AlexNet) and running test images 
+    through this model to calculate classification accuracy. Also contains code to prepare, split, and train/test SVM and transfer learning      approach to facilitate comparisons between these methods. 
+
+  > raspberry_pi_code
+
+      > build_code
+
+        > night_time_sample_image_gather.py - code for generating nighttime sample images to test system's performance in low light                  conditions 
+
+      > test_code 
+
+        > motion_sensor_test.py - code for testing motion sensor's ability to detect moving objects in field of view 
+
+        > camera_test.py - code for testing camera's ability to capture images of sufficient quality and size 
+
+  > scripts
+
+      > build_features.py - script that builds features that will be run through the SVM, mean model, and transfer learning approach 
+
+      > make_datasets.py - script that downloads aggregate/raw bird and squirrel dataset from the storage location on Kaggle
+
+      > train_models.py - script that trains the SVM and ResNet models, and returns trained models along with predictions on test set 
+
+
+  > setup.py - script that calls each step of the data preparation and analysis pipeline sequentially 
+
+
+  Final Results: 
+
+  After testing the SVM model (non-neural network approach), the AlexNet model (pre-trained mean model), and the transfer learnign based       ResNet approach, we determined that the transfer learning approach provided the most accurate and robust model for our purpose. This model
+  was hosted online using the platform Heroku, and an API call was structured to submit motion-capture images from our hardware apparatus, 
+  and generate predictions. These predictions would be sent back to our hardware apparatus (Raspberry Pi based system) and the appropriate     action would be taken (none for birds vs. alarm to antagonize squirrels)
+
+  Future Directions: 
+
+  To continue testing the model in a variety of conditions it may encounter in the real world (inclement weather, other animals making an      appearance, motion artifacts, etc.) to ensure that its performance is robust. Potentially developing an application that alerts customers    whenever an animal is detected at their bird feeder by pushing a notification to their phones.
+
