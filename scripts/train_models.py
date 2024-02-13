@@ -9,6 +9,8 @@ from torchvision import transforms
 from PIL import Image
 import time
 
+from sklearn.metrics import confusion_matrix, accuracy_score, classification_report
+
 
 def train_svm (X_train, X_test, y_train, y_test):
 
@@ -57,6 +59,19 @@ def predict_svm(svm_model, image):
     label = svm_model.predict(data)
 
     return label
+
+def evaluate_svm(svm_model, X_test, y_test):
+    # predict the labels of the test set
+    y_pred = svm_model.predict(X_test)
+
+    # calculate the accuracy of the model
+    accuracy = accuracy_score(y_pred, y_test)
+
+    conf_mat = confusion_matrix(y_test, y_pred, labels = ['Bird', 'Squirrel'])
+
+    clf_rep = classification_report(y_test, y_pred)
+
+    return accuracy, conf_mat, clf_rep
 
 def train_resnet(train_loader, test_loader):
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -128,9 +143,9 @@ def predict_resnet(image_path, model_pth):
     input_image = input_image.to(device)
 
     # Perform inference
-    model.eval()
+    model_loaded.eval()
     with torch.no_grad():
-        output = model(input_image)
+        output = model_loaded(input_image)
 
     # Get predicted class probabilities and class index
     probabilities = torch.softmax(output, dim=1)[0]
@@ -141,3 +156,159 @@ def predict_resnet(image_path, model_pth):
     predicted_class_label = class_labels[predicted_class_index]
 
     return predicted_class_label, probabilities[predicted_class_index].item()
+
+def evaluate_resnet(model, test_loader):
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model = model.to(device)
+
+    model.eval()
+    correct = 0
+    total = 0
+
+    preds_list = []
+    true_list = []
+
+    with torch.no_grad():
+        for inputs, labels in test_loader:
+            
+            inputs, labels = inputs.to(device), labels.to(device)
+            
+            outputs = model(inputs)
+            
+            _, predicted = torch.max(outputs, 1)
+
+            preds_list.extend(predicted.cpu().numpy())  # Append predicted labels to the list
+            true_list.extend(labels.cpu().numpy()) 
+            
+            total += labels.size(0)
+            
+            correct += (predicted == labels).sum().item()
+
+    test_accuracy = correct / total * 100
+
+    true_list = ["Bird" if x == 0 else "Squirrel" for x in true_list]
+
+    preds_list = ["Bird" if x == 0 else "Squirrel" for x in preds_list]
+
+    conf_mat = confusion_matrix(true_list, preds_list, labels = ['Bird', 'Squirrel'])
+
+    clf_rep = classification_report(true_list, preds_list)
+
+    return test_accuracy, conf_mat, clf_rep
+
+def eval_alexnet(test_loader, device=torch.device('cuda' if torch.cuda.is_available() else 'cpu')):
+    import re
+
+    '''
+
+    This function calls a pretrained AlexNet model
+    It runs the test images we created above through the network and generates predictions
+    It then prints these classification predictions along with the probability percentage
+
+    Args:
+
+    X_test: numpy array of the test images
+
+    Returns: None
+
+    '''
+
+    # initializing pretrained alexnet model
+    model = torchvision.models.alexnet(pretrained=True)
+    # putting model in evaluation mode
+    model.eval()
+
+    # defining transforms that will be applied to the image
+
+    preprocess = transforms.Compose([
+      transforms.Resize(256),
+      transforms.CenterCrop(224),
+      transforms.ToTensor(),
+      transforms.Normalize(
+      mean=[0.485, 0.456, 0.406],
+      std=[0.229, 0.224, 0.225]
+    )])
+
+    correct = 0
+    total = 0
+
+    # initializing empty list for storing predictions
+    preds_list = []
+    true_list = []
+
+    # calling classes used in alexnet model for labelling
+    with open('.\\scripts\\Doc4.txt') as f:
+      classes = [line.strip() for line in f.readlines()]
+
+    with torch.no_grad():
+      for inputs, labels in test_loader:
+          
+          inputs, labels = inputs.to(device), labels.to(device)
+          
+          outputs = model(inputs)
+          
+          # _, predicted = torch.max(outputs, 1)
+
+          _ , indices = torch.sort(outputs, descending = True)
+
+          for idx in indices:
+             preds_list.append(classes[idx[0]])
+
+          true_list.extend(labels.cpu().numpy()) 
+          
+          total += labels.size(0)
+    
+    pattern = r'\d+:'
+
+    preds = [re.sub(pattern, '', text) for text in preds_list]
+
+    # Asked LLM to isolate the bird species from the AlexNet classes textfile
+
+    bird_species = [
+        'cock', 'hen', 'ostrich', 'brambling', 'goldfinch', 'house finch',
+        'junco', 'indigo bunting', 'robin', 'bulbul', 'jay', 'magpie',
+        'chickadee', 'water ouzel', 'kite', 'bald eagle', 'vulture',
+        'great grey owl', 'black grouse', 'ptarmigan', 'ruffed grouse',
+        'prairie chicken', 'peacock', 'quail', 'partridge', 'African grey',
+        'macaw', 'sulphur-crested cockatoo', 'lorikeet', 'coucal',
+        'bee eater', 'hornbill', 'hummingbird', 'jacamar', 'toucan',
+        'drake', 'red-breasted merganser', 'goose', 'black swan',
+        'spoonbill', 'flamingo', 'little blue heron', 'American egret',
+        'bittern', 'crane', 'limpkin', 'European gallinule', 'American coot',
+        'bustard', 'ruddy turnstone', 'red-backed sandpiper', 'redshank',
+        'dowitcher', 'oystercatcher', 'pelican', 'king penguin', 'albatross'
+    ]
+
+    # Asked LLM to isolate the squirrel species from the AlexNet classes textfile
+
+    squirrel_species = [
+        'squirrel', 'fox squirrel', 'marmot'
+    ]
+
+    # going through and reclassifying predictions as either bird, squirrel, or other
+    pred_classes = []
+
+    for pred in preds:
+      for bird in bird_species:
+        if bird in pred:
+          pred_classes.append('Bird')
+          break
+      else:
+        for squirrel in squirrel_species:
+          if squirrel in pred:
+            pred_classes.append('Squirrel')
+            break
+        else:
+          pred_classes.append('Other')
+
+    #returning purely text predictions
+          
+    true_list = ["Bird" if x == 0 else "Squirrel" for x in true_list]
+
+    acc = accuracy_score(pred_classes, true_list)
+
+    conf_mat = confusion_matrix(true_list, pred_classes, labels = ['Bird', 'Squirrel'])
+
+    clf_rep = classification_report(true_list, pred_classes)
+
+    return acc, conf_mat, clf_rep

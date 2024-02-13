@@ -3,9 +3,19 @@ from skimage.io import imread
 from skimage.transform import resize
 import numpy as np
 
+from torchvision import transforms
 from torch.utils.data import Dataset
 from PIL import Image
 import os
+
+import random
+
+transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                         std=[0.229, 0.224, 0.225])
+])
 
 def build_feat_svm(root_dir):
 
@@ -65,9 +75,9 @@ def build_feat_svm(root_dir):
 
     return data_array, labels_array
 
-import random
+
 class CustomDataset_ResNet(Dataset):
-    def __init__(self, root_dir, transform=None, percent=100):
+    def __init__(self, root_dir, transform=transform, percent=100):
         self.root_dir = root_dir
         self.transform = transform
         self.classes = os.listdir(root_dir)
