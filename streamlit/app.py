@@ -97,7 +97,7 @@ model_loaded.fc = torch.nn.Linear(model_loaded.fc.in_features, 2)  # Modify the 
 model_loaded = model_loaded.to('cpu')  # Move the model to the appropriate device (GPU or CPU)
 
 # Load the saved state dictionary into the model
-model_path = 'resnet18_custom_model.pth'
+model_path = '..\\models\\resnet18_custom_model.pth'
 model_loaded.load_state_dict(torch.load(model_path, map_location='cpu'))
 
 # Set the model to evaluation mode
