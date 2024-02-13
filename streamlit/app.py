@@ -31,7 +31,7 @@ def change_state():
         st.session_state['upload_choice'] = 'file_up'
 
 # User toggle for file_uploader vs webcam
-# st.toggle(label="Webcam",  help="Click on to use webcam, off to upload a file", on_change=change_state)   
+st.toggle(label="Webcam",  help="Click on to use webcam, off to upload a file", on_change=change_state)   
 
 # Use state to know whether to show file_uploader or webcam
 if st.session_state['upload_choice'] == 'file_up':
@@ -41,9 +41,8 @@ if st.session_state['upload_choice'] == 'file_up':
     else:
         st.session_state['number_of_files'] = 0
 else:
-    captured_photo = st.camera_input(label="Webcam")
-    if captured_photo is not None:
-        img = st.image(captured_photo)
+    img = st.camera_input(label="Webcam")
+    if img is not None:
         st.session_state['number_of_files'] = 1
     else:
         st.session_state['number_of_files'] = 0
@@ -97,7 +96,7 @@ model_loaded.fc = torch.nn.Linear(model_loaded.fc.in_features, 2)  # Modify the 
 model_loaded = model_loaded.to('cpu')  # Move the model to the appropriate device (GPU or CPU)
 
 # Load the saved state dictionary into the model
-model_path = '..\\models\\resnet18_custom_model.pth'
+model_path = 'resnet18_custom_model.pth'
 model_loaded.load_state_dict(torch.load(model_path, map_location='cpu'))
 
 # Set the model to evaluation mode
@@ -135,7 +134,7 @@ if st.session_state['show_result'] != 0:
             }
             </style>
             <div class="centered">
-                🐦🐦🐦🐦🐦🐦🐦🐦🐦🐦🐦🐦🐦🐦🐦🐦🐦🐦
+                🐦🐦🐦🐦🐦🐦🐦🐦🐦🐦🐦🐦🐦🐦🐦🐦
             </div>
             """, unsafe_allow_html=True)
         st.markdown("""
@@ -156,10 +155,11 @@ if st.session_state['show_result'] != 0:
             }
             </style>
             <div class="centered">
-                🐦🐦🐦🐦🐦🐦🐦🐦🐦🐦🐦🐦🐦🐦🐦🐦🐦🐦
+                🐦🐦🐦🐦🐦🐦🐦🐦🐦🐦🐦🐦🐦🐦🐦🐦
             </div>
             """, unsafe_allow_html=True)
-        st.image(img)
+        if st.session_state['upload_choice'] == 'file_up':
+            st.image(img)
     else:
         st.markdown("""
             <style>
@@ -168,7 +168,7 @@ if st.session_state['show_result'] != 0:
             }
             </style>
             <div class="centered">
-                🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️
+                🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️
             </div>
             """, unsafe_allow_html=True)
         st.markdown("""
@@ -189,7 +189,8 @@ if st.session_state['show_result'] != 0:
             }
             </style>
             <div class="centered">
-                🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️
+                🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️🐿️
             </div>
             """, unsafe_allow_html=True)
-        st.image(img)
+        if st.session_state['upload_choice'] == 'file_up':
+            st.image(img)
