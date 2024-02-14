@@ -8,9 +8,13 @@ AIPI 540 Spring 2024
 
 Professor: Dr. Brinnae Bent 
 
+# Objective
+
 The objectives of this assignment were to develop a novel computer vision based project to showcase our understanding of concepts covered in class. For this assignment, we decided to create a computer vision based bird feeder than can detect birds and squirrels visiting bird feeders, and sound an alarm to chase the squirrels away. To this end, we developed a hardware system (Raspberry Pi) based which contains the motion sensor, camera, and alarm. We developed several models in parallel that can process and make predictions on animal images and classify the images as either birds or squirrels. These models include a non-neural network approach (SVM), a pre-trained mean neural network model (AlexNet), and a transfer learning based ResNet model. We then hosted our final transfer learning based ResNet model on Heroku and submitted images from our hardware system via an API call. During testing, the model successfully identified several bird/squirrel stuffed toys and the system responded appropriately by raising the alarm for the squirrel toys. 
 
-Running the tool:
+# Running the tool:
+
+## Raspberry Pi
 
 Users will need a Raspberry Pi 4 running a 32 bit Debian OS. Users will connect the GPIO pins to the appropriate wires and sensors as displayed numerically in the main.py file. The main.py file is the only file needed to run the tool. 
 
@@ -18,11 +22,41 @@ Hardware needs include: motion sensor, camera (in Pi camera slot), and power rel
 
 Users will need to access the model file and output through an API call, as the Raspberry Pi cannot host this model running a 32 bit OS.
 
-Streamlit App: 
+## Streamlit App: 
+
+### Deployed Version
 
 https://huggingface.co/spaces/JaredBailey/BirdOrSquirrelV1
 
 Several sample images tested in the app were captured using the rasperry pi day and nighttime camera. These images can be found in the data folder.
+
+### Local Version (Within The Repo)
+
+To get the repo working, run the following code to install the necessary libraries:
+
+```pip install -r requirements.txt```
+
+In order to run the Streamlit app from within the repo itself, run the following code in the terminal:
+
+```cd streamlit```
+
+```streamlit run app.py```
+
+## ML/DL Pipeline
+
+To run the pipeline to download data, process data, train models and evaluate them;m run the following code in the terminal:
+
+``` python run setup.py```
+
+Running the above command will:
+1) Download the data from our dataset hosted on Kaggle
+2) Process the dataset for the SVM model, and then for the AlexNet and ResNet model
+3) Train all 3 models, and saves the trained weights
+4) It will finally calculate the accuracy, classification report and confusion matrix for all three trained models and save the heatmap for the confusion matrices as .png images.
+
+You will need to download the API token from your Kaggle account to download the data.
+
+## Repository Structure
 
 Our Repository is Structured as Follows: 
 
@@ -84,12 +118,11 @@ Folders
       > app.py - script containing Raspberry Pi controls as well as UI interface (streamlit) 
 
     
-  Final Results: 
+# Final Results: 
 
   After testing the SVM model (non-neural network approach), the AlexNet model (pre-trained mean model), and the transfer learnign based ResNet approach, we determined that the transfer learning approach provided the most accurate and robust model for our purpose. This model was hosted online using the platform Heroku, and an API call was structured to submit motion-capture images from our hardware apparatus, 
   and generate predictions. These predictions would be sent back to our hardware apparatus (Raspberry Pi based system) and the appropriate action would be taken (none for birds vs. alarm to antagonize squirrels)
 
-  Future Directions: 
+# Future Directions: 
 
   To continue testing the model in a variety of conditions it may encounter in the real world (inclement weather, other animals making an appearance, motion artifacts, etc.) to ensure that its performance is robust. Potentially developing an application that alerts customers whenever an animal is detected at their bird feeder by pushing a notification to their phones.
-
