@@ -1,3 +1,10 @@
+###
+# This script runs on a Raspberry Pi 4 with a night vision camera and a motion sensor
+# The camera takes a photo when motion is detected and sends it to a server for classification
+# If the classification is not a bird, the relay is activated to scare the animal
+# The relay is connected to an ultrasonic frequency alarm
+###
+
 #####
 ###
 # 00 Imports
@@ -20,7 +27,7 @@ import requests
 pir = MotionSensor(15) # GPIO Pin
 camera = PiCamera()
 i = 1 # photo counter for naming
-path = "/home/jaredbailey/Desktop/Home/Projects/Bird_Feeder/Images/"
+path = "/home/jaredbailey/Desktop/Home/Projects/Bird_Feeder/Images/" # raspberry pi path
 pin = 14 # power relay pin
 # configure pin
 GPIO.setmode(GPIO.BCM)
@@ -41,7 +48,7 @@ def take_photo(path):
     Args
         Path to save photo - string
     Return
-        None
+        Name of the image - string
     """
     global i
     camera.capture(path + "pic_" + str(i) + ".jpg")
@@ -78,7 +85,6 @@ def send_receive_photo(path, image_name):
         output = response.json()
         print(output)
         classi = output["pred_class"]
-        # confi = output["confidence"]
         
         if classi == "bird":
             classification = 0
@@ -88,7 +94,7 @@ def send_receive_photo(path, image_name):
     except:
         pass
     
-    return classification #, confi
+    return classification
 
 
 def scare_animal(pin, classification=1):
